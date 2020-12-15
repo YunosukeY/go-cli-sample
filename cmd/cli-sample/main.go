@@ -120,7 +120,10 @@ func wait(rscs []resource, namespace string, cond string, timeout string) error 
 		rsc := rsc // https://golang.org/doc/faq#closures_and_goroutines
 		eg.Go(func() error {
 			if err := _wait(rsc, namespace, cond, timeout); err != nil {
-				return fmt.Errorf("wait %s error: %w", rsc, err)
+				// waitが失敗したリソースをdescribeで見る
+				if err = describe(rsc, namespace); err != nil {
+					return fmt.Errorf("describe error: %w", err)
+				}
 			}
 			return nil
 		})
@@ -135,10 +138,7 @@ func _wait(rsc resource, namespace string, cond string, timeout string) error {
 	out, err := exec.Command("kubectl", "wait", rsc.kind+"/"+rsc.name, "-n", namespace, "--for=condition="+cond, "--timeout="+timeout).CombinedOutput()
 	fmt.Print(string(out))
 	if err != nil {
-		// waitが失敗したリソースをdescribeで見る
-		if err = describe(rsc, namespace); err != nil {
-			return fmt.Errorf("describe error: %w", err)
-		}
+		return fmt.Errorf("wait cmd error: %w", err)
 	}
 	return nil
 }

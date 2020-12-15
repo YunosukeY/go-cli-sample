@@ -58,7 +58,7 @@ func runCmd(name string, args ...string) error {
 
 func printUsage() {
 	usage := `Usage:
-- kind.sh create
-- kind.sh delete`
+- go run ./cmd/cli-sample create
+- go run ./cmd/cli-sample delete`
 	fmt.Println(usage)
 }
